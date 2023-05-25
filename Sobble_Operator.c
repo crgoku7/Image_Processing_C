@@ -25,8 +25,7 @@ int main(){
 
 	//READING IMG PATH FROM TERMINAL
 	printf("ENTER PATH TO IMAGE FILE:");
-	//fgets(src, 50, stdin);
-	strcpy(src, "images\\color\\lena_color.bmp");
+	fgets(src, 50, stdin);
 
 	//CALLING THE IMG PROCESSING FUNCTION
 	Image_Process(src);
@@ -75,7 +74,7 @@ int * G_blur(unsigned char * grey_matrix, int img_h, int img_w){
 	return blur_matrix;
 	
 }
-
+//APPLIES SOBBLE FILTER TO MATRIX
 int * Sobble(int * blur_matrix, int img_h, int img_w){
 	int img_size = img_h*img_w;
 	int * sobble_matrix = (void*)malloc(sizeof(int)*img_size);
@@ -111,6 +110,8 @@ int * Sobble(int * blur_matrix, int img_h, int img_w){
 	}
 	return sobble_matrix;
 }
+
+//STILL TESTING THIS - DIVIDES IMAGE IN PATCHES AND HIGHLIGHTS PATCHES WITH EDGES
 int* Patch(int* sobble_matrix, int img_h, int img_w, int patch_s ){
 	int n = (img_h*img_w)/(patch_s*patch_s);
 	int *patch_matrix = (int*)malloc(sizeof(int)*n);
@@ -127,17 +128,18 @@ int* Patch(int* sobble_matrix, int img_h, int img_w, int patch_s ){
 	return patch_matrix;
 }
 
+//MAIN IMAGE PROCESSING FUNCTION
 int Image_Process(char src[50]){
-	FILE *fin, *fout, *fblur;
+	FILE *fin, *fout, *fsob;
 	fin = fopen(src, "rb");
 	fout = fopen("results\\image_o.bmp", "wb");
-	fblur = fopen("results\\image_b.bmp", "wb");
+	fsob = fopen("results\\image_b.bmp", "wb");
 
 	//READ IMAGE HEADER AND ASSIGN H,W,BITDEPTH
 	unsigned char header[54];				
 	fread(header, sizeof(unsigned char), 54, fin);
 	fwrite(header, sizeof(unsigned char), 54, fout);
-	fwrite(header, sizeof(unsigned char), 54, fblur);
+	fwrite(header, sizeof(unsigned char), 54, fsob);
 
 	int img_h = *(int *)&header[22];
 	int img_w = *(int *)&header[18];
@@ -151,7 +153,7 @@ int Image_Process(char src[50]){
 		unsigned char colorTable[1024];
 		fread(colorTable, sizeof(unsigned char), 1024, fin);
 		fwrite(colorTable, sizeof(unsigned char), 1024, fout);
-		fwrite(colorTable, sizeof(unsigned char), 1024, fblur);
+		fwrite(colorTable, sizeof(unsigned char), 1024, fsob);
 	}
 
 	//BITDEPTH = 8 => GREYSCALE
@@ -169,7 +171,7 @@ int Image_Process(char src[50]){
 
 		for(int i = 0; i< img_size; i++){
 			fputc(sobble_matrix[i], fout);
-			fputc(blur_matrix[i], fblur);
+			fputc(blur_matrix[i], fsob);
 		}
 
 
@@ -215,36 +217,29 @@ int Image_Process(char src[50]){
 			int x = (i%img_w)/patch_s;
 			int y = (i/img_h)/patch_s;
 			
-			if((i/img_w)%patch_s!=0 && i%patch_s!=0){//(i/img_w)%patch_s!=0 && i%patch_s!=0
-			//int I = *(int*)&img_matrix;
-			int B = blur_matrix[i];
+			if((i/img_w)%patch_s!=0 && i%patch_s!=0){
 
-			fputc(img_matrix[3*i+2],fout);
-			fputc(img_matrix[3*i+1], fout);
-			fputc(img_matrix[3*i],fout);
-			fputc(sobble_matrix[i],fblur);
-			fputc(sobble_matrix[i], fblur);
-			fputc(sobble_matrix[i],fblur);
+				fputc(img_matrix[3*i+2],fout);
+				fputc(img_matrix[3*i+1], fout);
+				fputc(img_matrix[3*i],fout);
+
 			}
 			else{
-			int pn = y*(img_w/patch_s)+x;
-			//printf("%d\n", patch_matrix[pn]);
-			if(patch_matrix[pn]>8){
-				fputc(0,fout);
-				fputc(255, fout);
-				fputc(0,fout);
+				int pn = y*(img_w/patch_s)+x;
+				//printf("%d\n", patch_matrix[pn]);
+				if(patch_matrix[pn]>8){
+					fputc(0,fout);
+					fputc(255, fout);
+					fputc(0,fout);
 			}
-			else{
-				fputc(0,fout);
-				fputc(0, fout);
-				fputc(0,fout);
-			}
-			
-			}
+			fputc(sobble_matrix[i],fsob);
+			fputc(sobble_matrix[i], fsob);
+			fputc(sobble_matrix[i],fsob);
 		}
 	
-	//fclose(fin);
-	//fclose(fout);
+	fclose(fin);
+	fclose(fout);
+	fclose(fsob);
 
 }
 }
