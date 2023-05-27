@@ -1,7 +1,6 @@
 //IMPORTING ESSESNTIAL LIBRARIES
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
 #include <math.h>
 
@@ -80,7 +79,7 @@ int * G_blur(unsigned char * grey_matrix, int img_h, int img_w){
 	return blur_matrix;
 	
 }
-
+//HYSTERESIS THRESHOLDING
 int* Hys_Thres(int *canny_matrix, int h_thres, int l_thres, int img_h, int img_w){
 	int img_size = img_h*img_w;
 	int* hys_matrix = (void*)malloc(sizeof(int)*img_size);
@@ -109,7 +108,7 @@ int* Hys_Thres(int *canny_matrix, int h_thres, int l_thres, int img_h, int img_w
 	}
 
 
-
+//CANNY OPERATOR
 int * Canny(int *sobble_matrix, double * orient, int img_h, int img_w){
 	int img_size = img_h*img_w;
 	int* canny_matrix = (void*)malloc(sizeof(int)*img_size);
@@ -151,6 +150,7 @@ int * Canny(int *sobble_matrix, double * orient, int img_h, int img_w){
 	return canny_matrix;
 }
 
+//SOBBLE OPERATOR
 int * Sobble(int * blur_matrix, int img_h, int img_w){
 	int img_size = img_h*img_w;
 	int * sobble_matrix = (void*)malloc(sizeof(int)*img_size);
@@ -333,19 +333,19 @@ int Image_Process(char src[50]){
 			
 			}
 			else{
-			int pn = y*(img_w/patch_s)+x;
+				int pn = y*(img_w/patch_s)+x;
 
-			if(patch_matrix[pn]>8){
-				img_matrix[3*i+2] = 255;
-				img_matrix[3*i+1]= 0;
-				img_matrix[3*i] = 0;
+				if(patch_matrix[pn]>8){
+					img_matrix[3*i+2] = 255;
+					img_matrix[3*i+1]= 0;
+					img_matrix[3*i] = 0;
 			}
-			else{
-				if(img_matrix[3*i+2] != 255){
+				else{
+					
 					img_matrix[3*i+2] = 0;
 					img_matrix[3*i+1]= 0;
 					img_matrix[3*i] = 0;
-				}
+				
 			}
 			
 			}
@@ -358,7 +358,7 @@ int Image_Process(char src[50]){
 	printf("\nIMAGE HAS BEEN ANALYSED AND RESULT GENERATED");
 	
 	}
-	fclose(fin);
+	
 	fclose(fout);
 }
 
